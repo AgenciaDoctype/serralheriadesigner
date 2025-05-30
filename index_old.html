@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pedido Fast Food</title>
+  <title>Orçamento de Venda/Serviço</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
@@ -21,7 +21,7 @@
       padding: 15px;
     }
     .header {
-      background-color: #ff3b3b;
+      background-color: #000000;
       color: white;
       text-align: center;
       padding: 20px;
@@ -51,8 +51,8 @@
       margin-top: 8px;
     }
     .btn-success { background-color: #28a745; border: none; }
-    .btn-primary { background-color: #ff3b3b; border: none; }
-    .btn-secondary { background-color: #ffc107; border: none; }
+    .btn-primary { background-color: #000000; border: none; }
+    .btn-secondary { background-color: #0cac2f; border: none; }
     #total {
       font-size: 20px;
       font-weight: bold;
@@ -65,8 +65,8 @@
 <body>
 <div class="container">
   <div class="header">
-    <h2>Boteco do Cassim</h2>
-    <p>Pedidos Rápidos</p>
+    <h2>SERRALHERIA DESIGNER</h2>
+    <p>Orçamento de Venda/Serviço</p>
   </div>
 
   <div class="card">
@@ -77,7 +77,7 @@
   <div class="card">
     <h4 class="mb-3">Itens do Pedido</h4>
     <div id="itens"></div>
-    <button class="btn btn-success" onclick="adicionarItem()">🍔 Adicionar Produto</button>
+    <button class="btn btn-success" onclick="adicionarItem()">Adicionar Produto</button>
 
     <input class="form-control mt-3" id="desconto" placeholder="Desconto (R$)" inputmode="numeric"/>
     <input class="form-control" id="acrescimo" placeholder="Acréscimo (R$)" inputmode="numeric"/>
@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     div.innerHTML = `
       <input class="form-control mb-1" placeholder="Produto" id="produto${index}">
       <input class="form-control mb-1" type="number" placeholder="Quantidade" id="qtd${index}" value="1">
-      <input class="form-control mb-1" type="number" placeholder="Valor Unitário (R$)" id="valor${index}" value="0">
+      <input class="form-control mb-1" type="number" placeholder="Valor Unitário (R$)" id="valor${index}">
       <input class="form-control mb-1" placeholder="Observação (opcional)" id="obs${index}">
     `;
     document.getElementById('itens').appendChild(div);
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const doc = new jsPDF({ orientation: 'landscape' });
 
     doc.setFontSize(22);
-    doc.text("PEDIDO - BOTECÃO", 150, 15, { align: 'center' });
+    doc.text("ORÇAMENTO DE VENDA/SERVIÇO", 150, 15, { align: 'center' });
 
     doc.setFontSize(14);
     doc.text(`Cliente: ${cliente}`, 10, 30);
@@ -143,11 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
     doc.line(10, 40, 280, 40);
 
     const body = itens.map(i => [
-      document.getElementById(`produto${i}`).value,
-      document.getElementById(`qtd${i}`).value,
+      document.getElementById(`produto${i}`).value || '-',
+      document.getElementById(`qtd${i}`).value || '0',
       `R$ ${parseFloat(document.getElementById(`valor${i}`).value || 0).toFixed(2)}`,
       `R$ ${(parseFloat(document.getElementById(`qtd${i}`).value || 0) * parseFloat(document.getElementById(`valor${i}`).value || 0)).toFixed(2)}`,
-      document.getElementById(`obs${i}`).value
+      document.getElementById(`obs${i}`).value || '-'
     ]);
 
     doc.autoTable({
@@ -156,9 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
       body: body,
       styles: { fontSize: 12, halign: 'center' },
       headStyles: { fillColor: [0, 123, 255], textColor: 255 },
+      alternateRowStyles: { fillColor: [240, 240, 240] }
     });
 
-    const subtotal = body.reduce((acc, item) => acc + parseFloat(item[3].replace('R$', '')), 0);
+    const subtotal = body.reduce((acc, item) => acc + parseFloat(item[3].replace('R$', '').replace(',', '.')), 0);
     const desconto = parseFloat(document.getElementById('desconto').value) || 0;
     const acrescimo = parseFloat(document.getElementById('acrescimo').value) || 0;
     const total = subtotal - desconto + acrescimo;
@@ -167,19 +168,18 @@ document.addEventListener('DOMContentLoaded', () => {
     doc.setFontSize(16);
     doc.text(`TOTAL: R$ ${total.toFixed(2)}`, 10, y);
 
-    doc.save('pedido-fastfood.pdf');
+    doc.save('orcamento.pdf');
   }
 
   function compartilharWhatsApp() {
     const cliente = document.getElementById('cliente').value;
     const telefone = document.getElementById('telefone').value;
     const total = calcularTotal();
-    const texto = `Pedido - Boteco do Cassim%0ACliente: ${cliente}%0ATotal: R$ ${total.toFixed(2)}`;
+    const texto = `Orçamento - Boteco do Cassim%0ACliente: ${cliente}%0ATotal: R$ ${total.toFixed(2)}`;
     const url = `https://wa.me/55${telefone.replace(/\D/g, '')}?text=${texto}`;
     window.open(url, '_blank');
   }
 
-  // tornar disponíveis globalmente
   window.adicionarItem = adicionarItem;
   window.gerarPDF = gerarPDF;
   window.compartilharWhatsApp = compartilharWhatsApp;
